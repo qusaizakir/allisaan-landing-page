@@ -1,9 +1,15 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.qzakapps.lisandictionary",
-    "sha256_cert_fingerprints":
-    ["0E:3E:BF:69:0A:29:26:AD:0B:37:9B:67:B0:DB:4A:67:40:D8:22:B2:3C:3F:41:84:4D:7C:2B:90:60:94:43:16"]
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.qzakapps.lisandictionary",
+      "sha256_cert_fingerprints": [
+        "D0:BB:63:92:8E:A7:46:82:E6:4C:9C:DE:6A:07:8C:65:26:C4:13:38:34:C6:08:E2:52:A5:B2:15:DE:2B:38:09",
+        "0E:3E:BF:69:0A:29:26:AD:0B:37:9B:67:B0:DB:4A:67:40:D8:22:B2:3C:3F:41:84:4D:7C:2B:90:60:94:43:16"
+      ]
+    }
   }
-}]
+]
