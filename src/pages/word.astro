@@ -3,35 +3,32 @@ const packageName = "com.qzakapps.lisandictionary";
 const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Redirecting…</title>
-  </head>
+<html>
+  <head><meta charset="utf-8" /></head>
   <body>
     <script is:inline>
       const packageName = "com.qzakapps.lisandictionary";
       const playStoreUrl = "https://play.google.com/store/apps/details?id=" + packageName;
 
-      // 1) Try to get id from /word/500
-      const pathMatch = window.location.pathname.match(/^\/word\/([^\/?#]+)/);
-      let id = pathMatch ? pathMatch[1] : "";
+      // pathname will still be /word/500 because of the 200 rewrite
+      const path = window.location.pathname; // e.g. "/word/500"
+      const rest = path.replace(/^\/word\/?/, ""); // "500"
+      const id = rest.split("/")[0];              // "500" (handles "/word/500/")
 
-      // 2) Fallback: also allow /word?id=500
       if (!id) {
-        id = new URL(window.location.href).searchParams.get("id") || "";
+        // nothing to deep link
+        window.location.replace(playStoreUrl);
+      } else {
+        const encodedId = encodeURIComponent(id);
+
+        const intentUrl =
+          "intent://allisaan.uk/word/" + encodedId +
+          "#Intent;scheme=https;package=" + packageName + ";" +
+          "S.browser_fallback_url=" + encodeURIComponent(playStoreUrl) + ";end";
+
+        window.location.replace(intentUrl);
+        setTimeout(() => window.location.replace(playStoreUrl), 1200);
       }
-
-      const encodedId = encodeURIComponent(id);
-
-      const intentUrl =
-        "intent://allisaan.uk/word/" + encodedId +
-        "#Intent;scheme=https;package=" + packageName + ";" +
-        "S.browser_fallback_url=" + encodeURIComponent(playStoreUrl) + ";end";
-
-      window.location.replace(intentUrl);
-      setTimeout(() => window.location.replace(playStoreUrl), 1200);
     </script>
   </body>
 </html>
