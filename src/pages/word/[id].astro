@@ -1,8 +1,10 @@
+---
 const { id } = Astro.params;
 
 const packageName = "com.qzakapps.lisandictionary";
 const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
 
+// Chrome/Android best-effort open + fallback
 const intentUrl =
   `intent://allisaan.uk/word/${id}` +
   `#Intent;scheme=https;package=${packageName};` +
@@ -14,90 +16,17 @@ const intentUrl =
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Redirecting…</title>
-
-    <!-- If JS is disabled, go to Play Store -->
-    <noscript>
-      <meta http-equiv="refresh" content={`0;url=${playStoreUrl}`} />
-    </noscript>
   </head>
-
   <body>
-    <script define:vars={{ intentUrl, playStoreUrl }}>
-      // Try Android intent (Chrome will use browser_fallback_url if not installed)
+    <script is:inline>
+      const intentUrl = {JSON.stringify(intentUrl)};
+      const playStoreUrl = {JSON.stringify(playStoreUrl)};
+
+      // Try open app (Chrome supports intent://)
       window.location.replace(intentUrl);
 
-      // For browsers that ignore intent:// (e.g. Firefox),
-      // fall back to Play Store after a moment.
-      setTimeout(() => {
-        window.location.replace(playStoreUrl);
-      }, 1200);
+      // Browsers that ignore intent:// (e.g. Firefox) will stay here -> send to Play
+      setTimeout(() => window.location.replace(playStoreUrl), 1200);
     </script>
   </body>
-</html>const { id } = Astro.params;
-
-const packageName = "com.qzakapps.lisandictionary";
-const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
-
-// Best on Chrome (gives a real fallback mechanism)
-const intentUrl =
-  `intent://allisaan.uk/word/${id}` +
-  `#Intent;scheme=https;package=${packageName};` +
-  `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
-
-// Optional: if you ALSO have a custom scheme in your app, put it here.
-// If you don't, you can remove it.
-// Example only:
-// const schemeUrl = `lisandictionary://word/${id}`;
-const schemeUrl = ""; // leave empty if you don't have one
----
-
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Redirecting…</title>
-    <script>
-      (function () {
-        const play = "{playStoreUrl}";
-        const intent = "{intentUrl}";
-        const scheme = "{schemeUrl}";
-
-        let redirected = false;
-        let fallbackTimer;
-
-        // If the page gets hidden, it strongly suggests the app switch happened.
-        function cancelFallback() {
-          if (fallbackTimer) clearTimeout(fallbackTimer);
-        }
-
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden) cancelFallback();
-        });
-        window.addEventListener("pagehide", cancelFallback);
-        window.addEventListener("blur", cancelFallback);
-
-        // Set fallback: if we’re still visible after ~1200ms, go to Play Store.
-        fallbackTimer = setTimeout(() => {
-          if (!document.hidden && !redirected) {
-            redirected = true;
-            window.location.replace(play);
-          }
-        }, 1200);
-
-        // Try Chrome-first intent (best Play fallback when supported)
-        try {
-          window.location.replace(intent);
-        } catch (e) {}
-
-        // For browsers that don't support intent:// (e.g., Firefox),
-        // optionally try a custom scheme (only if your app supports it).
-        if (scheme) {
-          setTimeout(() => {
-            if (!document.hidden) window.location.href = scheme;
-          }, 50);
-        }
-      })();
-    </script>
-  </head>
-  <body></body>
 </html>
