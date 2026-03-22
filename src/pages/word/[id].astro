@@ -1,0 +1,68 @@
+const { id } = Astro.params;
+
+const packageName = "com.qzakapps.lisandictionary";
+const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
+
+// Best on Chrome (gives a real fallback mechanism)
+const intentUrl =
+  `intent://allisaan.uk/word/${id}` +
+  `#Intent;scheme=https;package=${packageName};` +
+  `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+
+// Optional: if you ALSO have a custom scheme in your app, put it here.
+// If you don't, you can remove it.
+// Example only:
+// const schemeUrl = `lisandictionary://word/${id}`;
+const schemeUrl = ""; // leave empty if you don't have one
+---
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting…</title>
+    <script>
+      (function () {
+        const play = "{playStoreUrl}";
+        const intent = "{intentUrl}";
+        const scheme = "{schemeUrl}";
+
+        let redirected = false;
+        let fallbackTimer;
+
+        // If the page gets hidden, it strongly suggests the app switch happened.
+        function cancelFallback() {
+          if (fallbackTimer) clearTimeout(fallbackTimer);
+        }
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) cancelFallback();
+        });
+        window.addEventListener("pagehide", cancelFallback);
+        window.addEventListener("blur", cancelFallback);
+
+        // Set fallback: if we’re still visible after ~1200ms, go to Play Store.
+        fallbackTimer = setTimeout(() => {
+          if (!document.hidden && !redirected) {
+            redirected = true;
+            window.location.replace(play);
+          }
+        }, 1200);
+
+        // Try Chrome-first intent (best Play fallback when supported)
+        try {
+          window.location.replace(intent);
+        } catch (e) {}
+
+        // For browsers that don't support intent:// (e.g., Firefox),
+        // optionally try a custom scheme (only if your app supports it).
+        if (scheme) {
+          setTimeout(() => {
+            if (!document.hidden) window.location.href = scheme;
+          }, 50);
+        }
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
