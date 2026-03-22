@@ -14,19 +14,22 @@ const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageNam
       const packageName = "com.qzakapps.lisandictionary";
       const playStoreUrl = "https://play.google.com/store/apps/details?id=" + packageName;
 
-      // Expect URL like: /word?id=500  (or /word?id=anything)
-      const id = new URL(window.location.href).searchParams.get("id") || "";
+      // 1) Try to get id from /word/500
+      const pathMatch = window.location.pathname.match(/^\/word\/([^\/?#]+)/);
+      let id = pathMatch ? pathMatch[1] : "";
 
-      // Your deep link is https://allisaan.uk/word/500, so we preserve that target:
-      const targetHttps = "https://allisaan.uk/word/" + encodeURIComponent(id);
+      // 2) Fallback: also allow /word?id=500
+      if (!id) {
+        id = new URL(window.location.href).searchParams.get("id") || "";
+      }
 
-      // Best on Android Chrome: intent with Play fallback
+      const encodedId = encodeURIComponent(id);
+
       const intentUrl =
-        "intent://allisaan.uk/word/" + encodeURIComponent(id) +
+        "intent://allisaan.uk/word/" + encodedId +
         "#Intent;scheme=https;package=" + packageName + ";" +
         "S.browser_fallback_url=" + encodeURIComponent(playStoreUrl) + ";end";
 
-      // Try open app; if browser ignores intent://, send to Play shortly after
       window.location.replace(intentUrl);
       setTimeout(() => window.location.replace(playStoreUrl), 1200);
     </script>
