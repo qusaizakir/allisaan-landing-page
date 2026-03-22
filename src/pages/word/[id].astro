@@ -1,0 +1,33 @@
+---
+export const prerender = false; // <-- THIS is the key in hybrid/server mode
+
+const { id } = Astro.params;
+
+const packageName = "com.qzakapps.lisandictionary";
+const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
+
+const intentUrl =
+  `intent://allisaan.uk/word/${encodeURIComponent(id)}` +
+  `#Intent;scheme=https;package=${packageName};` +
+  `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Redirecting…</title>
+  </head>
+  <body>
+    <script is:inline>
+      const intentUrl = {JSON.stringify(intentUrl)};
+      const playStoreUrl = {JSON.stringify(playStoreUrl)};
+
+      // Android Chrome: opens app; if not installed uses browser_fallback_url
+      window.location.replace(intentUrl);
+
+      // Firefox/others: ignore intent://, so send to Play Store after a moment
+      setTimeout(() => window.location.replace(playStoreUrl), 1200);
+    </script>
+  </body>
+</html>
