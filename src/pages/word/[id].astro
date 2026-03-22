@@ -2,41 +2,11 @@
 export const prerender = false;
 
 const { id } = Astro.params;
+const pkg = "com.qzakapps.lisandictionary";
 
-const packageName = "com.qzakapps.lisandictionary";
-const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
+// Optional: pass the word id through Play Install Referrer
+const referrer = encodeURIComponent(`word_id=${id}`);
+const play = `https://play.google.com/store/apps/details?id=${pkg}&referrer=${referrer}`;
 
-const intentUrl =
-  `intent://allisaan.uk/word/${encodeURIComponent(id)}` +
-  `#Intent;scheme=https;package=${packageName};` +
-  `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+return Astro.redirect(play, 302);
 ---
-
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Redirecting…</title>
-  </head>
-  <body>
-    Redirecting...
-    <script is:inline>
-      const intentUrl = {JSON.stringify(intentUrl)};
-      const playStoreUrl = {JSON.stringify(playStoreUrl)};
-
-      // Start a fallback timer (if app didn't open, go to Play Store)
-      let t = setTimeout(() => {
-        window.location.replace(playStoreUrl);
-      }, 1200);
-
-      // If the app opens, Chrome will background/blur this page -> cancel fallback
-      const cancel = () => { if (t) clearTimeout(t); t = null; };
-      document.addEventListener("visibilitychange", () => { if (document.hidden) cancel(); });
-      window.addEventListener("pagehide", cancel);
-      window.addEventListener("blur", cancel);
-
-      // Try to open the app
-      window.location.href = intentUrl;
-    </script>
-  </body>
-</html>
