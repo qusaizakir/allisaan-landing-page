@@ -1,12 +1,27 @@
 ---
+// src/pages/word/[id].astro
 export const prerender = false;
 
 const { id } = Astro.params;
 const pkg = "com.qzakapps.lisandictionary";
-
-// Optional: pass the word id through Play Install Referrer
 const referrer = encodeURIComponent(`word_id=${id}`);
-const play = `https://play.google.com/store/apps/details?id=${pkg}&referrer=${referrer}`;
-
-return Astro.redirect(play, 302);
+const playStoreUrl = `https://play.google.com/store/apps/details?id=${pkg}&referrer=${referrer}`;
 ---
+
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Opening Lisan Dictionary...</title>
+</head>
+<body>
+  <p>Redirecting...</p>
+
+  <script define:vars={{ playStoreUrl }}>
+    // If Android App Links worked, we never reach this page.
+    // If we're here, the app isn't installed — redirect to Play Store.
+    setTimeout(() => {
+      window.location.href = playStoreUrl;
+    }, 500);
+  </script>
+</body>
+</html>
