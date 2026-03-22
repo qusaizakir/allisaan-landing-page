@@ -1,33 +1,48 @@
 ---
-export const prerender = false; // <-- THIS is the key in hybrid/server mode
+export const prerender = false;
 
 const { id } = Astro.params;
 
 const packageName = "com.qzakapps.lisandictionary";
 const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
+const marketUrl = `market://details?id=${packageName}`;
 
+// Android Chrome-family intent (opens app if installed; otherwise uses fallback)
 const intentUrl =
   `intent://allisaan.uk/word/${encodeURIComponent(id)}` +
   `#Intent;scheme=https;package=${packageName};` +
   `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 ---
 
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Redirecting…</title>
   </head>
   <body>
+    Redirecting...
     <script is:inline>
       const intentUrl = {JSON.stringify(intentUrl)};
       const playStoreUrl = {JSON.stringify(playStoreUrl)};
+      const marketUrl = {JSON.stringify(marketUrl)};
 
-      // Android Chrome: opens app; if not installed uses browser_fallback_url
-      window.location.replace(intentUrl);
+      const ua = navigator.userAgent || "";
+      const isAndroid = /Android/i.test(ua);
+      const isFirefox = /Firefox/i.test(ua);
 
-      // Firefox/others: ignore intent://, so send to Play Store after a moment
-      setTimeout(() => window.location.replace(playStoreUrl), 1200);
+      // Use intent:// only where it’s known to work (Chrome-family on Android).
+      // Firefox often does not support intent://.
+      if (isAndroid && !isFirefox) {
+        window.location.replace(intentUrl);
+      } else if (isAndroid) {
+        // Best effort to open Play Store app, then fallback to web Play Store
+        window.location.replace(marketUrl);
+        setTimeout(() => window.location.replace(playStoreUrl), 600);
+      } else {
+        // Non-Android: go to web Play Store
+        window.location.replace(playStoreUrl);
+      }
     </script>
   </body>
 </html>
