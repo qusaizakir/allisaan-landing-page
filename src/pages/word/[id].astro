@@ -5,16 +5,14 @@ const { id } = Astro.params;
 
 const packageName = "com.qzakapps.lisandictionary";
 const playStoreUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
-const marketUrl = `market://details?id=${packageName}`;
 
-// Android Chrome-family intent (opens app if installed; otherwise uses fallback)
 const intentUrl =
   `intent://allisaan.uk/word/${encodeURIComponent(id)}` +
   `#Intent;scheme=https;package=${packageName};` +
   `S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 ---
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -25,24 +23,20 @@ const intentUrl =
     <script is:inline>
       const intentUrl = {JSON.stringify(intentUrl)};
       const playStoreUrl = {JSON.stringify(playStoreUrl)};
-      const marketUrl = {JSON.stringify(marketUrl)};
 
-      const ua = navigator.userAgent || "";
-      const isAndroid = /Android/i.test(ua);
-      const isFirefox = /Firefox/i.test(ua);
-
-      // Use intent:// only where it’s known to work (Chrome-family on Android).
-      // Firefox often does not support intent://.
-      if (isAndroid && !isFirefox) {
-        window.location.replace(intentUrl);
-      } else if (isAndroid) {
-        // Best effort to open Play Store app, then fallback to web Play Store
-        window.location.replace(marketUrl);
-        setTimeout(() => window.location.replace(playStoreUrl), 600);
-      } else {
-        // Non-Android: go to web Play Store
+      // Start a fallback timer (if app didn't open, go to Play Store)
+      let t = setTimeout(() => {
         window.location.replace(playStoreUrl);
-      }
+      }, 1200);
+
+      // If the app opens, Chrome will background/blur this page -> cancel fallback
+      const cancel = () => { if (t) clearTimeout(t); t = null; };
+      document.addEventListener("visibilitychange", () => { if (document.hidden) cancel(); });
+      window.addEventListener("pagehide", cancel);
+      window.addEventListener("blur", cancel);
+
+      // Try to open the app
+      window.location.href = intentUrl;
     </script>
   </body>
 </html>
