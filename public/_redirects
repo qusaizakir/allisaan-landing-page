@@ -1,1 +1,1 @@
-/word/:id   /word   200
+/word/*   /word   200
